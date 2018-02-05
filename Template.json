@@ -1,3 +1,4 @@
+#Template for Cloud Formation.
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Cloud Formation Launch a single Instance.",
