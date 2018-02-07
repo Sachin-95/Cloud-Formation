@@ -55,7 +55,7 @@
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "ImageId": "ami-66506c1c",
+        "ImageId": "ami-1b791862",
         "KeyName": {
           "Ref": "KeyName"
         },
