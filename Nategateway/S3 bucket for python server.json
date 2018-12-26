@@ -3,7 +3,7 @@
   "Mappings": {
     "Environment2VPCID": {
       "dev": {
-        "VpcId": "vpc-e76c7f82",
+        "VpcId": "vpc-dbca0ba0",
         "VpcName": "dev"
       },
       "staging": {
@@ -16,19 +16,19 @@
       }
     },
     "VPCID2Subnets": {
-      "vpc-e76c7f82": {
+      "vpc-dbca0ba0": {
         "private": [
-          "subnet-c90c7690",
-          "subnet-b736599c",
-          "subnet-fb1c3c8c",
-          "subnet-396e9804"
+          "subnet-9e90d8b1",
+          "subnet-76f0bc2b",
+          "subnet-dbad65d4"
         ],
+        
         "public": [
-          "subnet-4e2c5617",
-          "subnet-79365952",
-          "subnet-931b3be4",
-          "subnet-7b6f9946"
-        ]
+          "subnet-50aee66f",
+          "subnet-669aa702",
+          "subnet-78c1d133"
+
+          ]
       },
       "vpc-850711e0": {
         "private": [
@@ -46,13 +46,13 @@
       }
     },
     "VPCID2SecurityGroup": {
-      "vpc-e76c7f82": {
+      "vpc-dbca0ba0": {
         "private": [
-          "sg-3307c954"
+          "sg-f0277187"
         ],
         "public": [
-          "sg-4814dc2f",
-          "sg-3307c954"
+          "sg-f0277187",
+          "sg-f0277187"
         ]
       },
       "vpc-850711e0": {
@@ -69,6 +69,7 @@
   "Parameters": {
     "InstanceType": {
       "AllowedValues": [
+        "t2.micro",
         "m3.medium",
         "m3.large",
         "m3.xlarge",
@@ -93,14 +94,14 @@
       "ConstraintDescription": "must be a valid EC2 instance type.",
       "Description": "EC2 instance type",
       "Type": "String",
-      "Default": "m3.medium"
+      "Default": "t2.micro"
     },
     "AMI": {
       "Description": "AMI to use for EC2",
       "MaxLength": "15",
       "MinLength": "10",
       "Type": "String",
-      "Default": "ami-d48fe6c3"
+      "Default": "ami-66506c"
     },
     "KeyPairName": {
       "AllowedPattern": "[\\x20-\\x7E]*",
@@ -143,14 +144,14 @@
       ],
       "Default": "true"
     },
-    "StackBucketName": {
+    "S3BucketName": {
       "Description": "This bucket contain the userdata script and chef-server validation key",
       "MaxLength": "35",
       "MinLength": "1",
       "Type": "String",
       "Default": "voicethread-platform"
     },
-    "StackBucketScript": {
+    "S3BucketScript": {
       "Description": "This is the script that will be run before run run_list",
       "MaxLength": "35",
       "MinLength": "1",
@@ -195,43 +196,19 @@
         "media",
         "support"
       ],
+
       "Default": "frontend"
     },
-    "IAMInstanceProfile": {
+
+ 
+      "IAMInstanceProfile": {
       "Description": "Name of IAM Profile",
       "MaxLength": "100",
       "MinLength": "1",
       "Type": "String",
-      "Default": "arn:aws:iam::579119708222:instance-profile/chef-node"
+      "Default": "arn:aws:iam::372347158988:instance-profile/sachin-dev"
     },
-    "ChefServer": {
-      "Description": "Select chef-server",
-      "MaxLength": "50",
-      "MinLength": "1",
-      "Type": "String",
-      "AllowedValues": [
-        "chefserver12-jai",
-        "chefserver12-dev",
-        "chefserver12-david",
-        "chefserver12-prod",
-        "prod-chefserver"
-      ],
-      "Default": "chefserver12-jai"
-    },
-    "HostedZoneName": {
-      "Description": "Name of Hosted Zone",
-      "MaxLength": "50",
-      "MinLength": "1",
-      "Type": "String",
-      "Default": "voicethread.net"
-    },
-    "OwnerName": {
-      "Description": "Name of Owner",
-      "MaxLength": "20",
-      "MinLength": "0",
-      "Type": "String",
-      "Default": ""
-    },
+
     "Namespace": {
       "AllowedPattern": "[\\x20-\\x7E]*",
       "ConstraintDescription": "Can contain only ASCII characters.",
@@ -263,14 +240,6 @@
           "Ref": "EnvironmentName"
         },
         "dev"
-      ]
-    },
-    "NoOwner": {
-      "Fn::Equals": [
-        {
-          "Ref": "OwnerName"
-        },
-        ""
       ]
     },
     "isPublic": {
@@ -306,6 +275,7 @@
             }
           ]
         },
+
         "IamInstanceProfile": {
           "Ref": "IAMInstanceProfile"
         },
@@ -360,6 +330,13 @@
               [
                 "#!/bin/bash\n",
                 "set -x\n",
+                "sudo apt-get -y update\n",
+                "sudo apt-get -y install python-pip\n",
+                "sudo apt-get -y install awscli\n",
+
+
+                "##!/bin/sh\n", 
+
                 "cat >> /etc/profile.d/vt-cf-env.sh << EOF\n",
                 "export ENVIRONMENT=",
                 {
@@ -373,17 +350,13 @@
                 {
                   "Ref": "AdminEmail"
                 },
-                "\nexport STACK_BUCKET=",
+                "\nexport S3_BUCKET=",
                 {
-                  "Ref": "StackBucketName"
+                  "Ref": "S3BucketName"
                 },
-                "\nexport STACK_BUCKET_SCRIPT=",
+                "\nexport S3_BUCKET_SCRIPT=",
                 {
-                  "Ref": "StackBucketScript"
-                },
-                "\nexport CHEF_SERVER=",
-                {
-                  "Ref": "ChefServer"
+                  "Ref": "S3BucketScript"
                 },
                 "\nexport SERVICE_NAME=",
                 {
@@ -404,15 +377,11 @@
                     ]
                   ]
                 },
-                "\nexport HOSTED_ZONE_NAME=",
-                {
-                  "Ref": "HostedZoneName"
-                },
                 "\nEOF\n",
                 "source /etc/profile.d/vt-cf-env.sh\n",
                 "mkdir -p /opt/${STACK_BUCKET}\n",
-                "aws s3 cp s3://${STACK_BUCKET} /opt/${STACK_BUCKET} --recursive\n",
-                "bash /opt/${STACK_BUCKET}/cloudformation/${STACK_BUCKET_SCRIPT}"
+                "aws s3 cp s3://${S3_BUCKET} /opt/${S3_BUCKET} --recursive\n",
+                "bash /opt/${S3_BUCKET}/${S3_BUCKET_SCRIPT}"
               ]
             ]
           }
@@ -423,7 +392,7 @@
     "AutoScalingGroup": {
       "Properties": {
         "AvailabilityZones": {
-          "Fn::GetAZs": ""
+          "Fn::GetAZs": "us-east-1c"
         },
         "DesiredCapacity": {
           "Ref": "AutoscalingDesiredCapacity"
@@ -439,6 +408,7 @@
         "MinSize": {
           "Ref": "AutoscalingMinSize"
         },
+        
         "Tags": [
           {
             "Key": "environment",
@@ -447,7 +417,7 @@
               "Ref": "EnvironmentName"
             }
           },
-          {
+           {
             "Key": "Name",
             "PropagateAtLaunch": "true",
             "Value": {
@@ -462,9 +432,7 @@
                     "Ref": "ServiceName"
                   },
                   ".",
-                  {
-                    "Ref": "HostedZoneName"
-                  }
+                  
                 ]
               ]
             }
@@ -487,27 +455,6 @@
             "Key": "active",
             "PropagateAtLaunch": "true",
             "Value": true
-          },
-          {
-            "Fn::If": [
-              "CheckEnvironment",
-              {
-                "Key": "owner",
-                "PropagateAtLaunch": "true",
-                "Value": {
-                  "Fn::If": [
-                    "NoOwner",
-                    "no-owner",
-                    {
-                      "Ref": "OwnerName"
-                    }
-                  ]
-                }
-              },
-              {
-                "Ref": "AWS::NoValue"
-              }
-            ]
           }
         ],
         "VPCZoneIdentifier": {
@@ -547,7 +494,7 @@
         }
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup"
-     },
+    },
     "CpuAlarmHigh": {
       "Properties": {
         "AlarmActions": [

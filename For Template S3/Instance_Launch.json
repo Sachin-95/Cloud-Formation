@@ -1,0 +1,138 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Cloud Formation Launch a single Instance.",
+  "Parameters": {
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+    "InstanceType": {
+      "Description": "WebServer EC2 instance type",
+      "Type": "String",
+      "Default": "t2.micro",
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+    "SSHLocation": {
+      "Description": " The IP address range that can be used to SSH to the EC2 instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+    "S3BucketName": {
+      "Description": "This bucket contain the userdata script and chef-server validation key",
+      "MaxLength": "35",
+      "MinLength": "1",
+      "Type": "String",
+      "Default": "sachin-automation-platform"
+    },
+    "S3BucketScript": {
+      "Description": "This is the script that will be run before run run_list",
+      "MaxLength": "35",
+      "MinLength": "1",
+      "Type": "String"
+    },
+    "IAMInstanceProfile": {
+      "Description": "Name of IAM Profile",
+      "MaxLength": "100",
+      "MinLength": "1",
+      "Type": "String",
+      "Default": "arn:aws:iam::260822065125:instance-profile/sachin-dev"
+    }
+  },
+  "Resources": {
+    "CloudFormationSG": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Enable HTTP access via port 80",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8080",
+            "ToPort": "8080",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": {
+              "Ref": "SSHLocation"
+            }
+          }
+        ]
+      }
+    },
+    "EC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-66506c1c",
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "IamInstanceProfile": {
+          "Ref": "IAMInstanceProfile"
+        },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash\n",
+                "set -x\n",
+                "sudo apt-get -y update\n",
+                "sudo apt-get -y install python-pip\n",
+                "sudp apt-get -y install awscli",
+                "mkdir -p /opt/${STACK_BUCKET}\n",
+                "aws s3 cp s3://${S3_BUCKET} /opt/${S3_BUCKET} --recursive\n",
+                "bash /opt/${S3_BUCKET}/${S3_BUCKET_SCRIPT}"
+              ]
+            ]
+          }
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "CloudFormationSG"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "WebsiteURL": {
+      "Description": "URL for newly created LAMP stack",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "http://",
+            {
+              "Fn::GetAtt": [
+                "EC2Instance",
+                "PublicDnsName"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    "InstanceId": {
+      "Description": "InstanceId of the newly created EC2 instance",
+      "Value": {
+        "Ref": "EC2Instance"
+      }
+    }
+  }
+}

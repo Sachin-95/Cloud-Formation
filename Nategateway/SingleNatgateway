@@ -1,0 +1,23 @@
+"NAT" : {
+  "DependsOn" : "VPCGatewayAttach",
+  "Type" : "AWS::EC2::NatGateway",
+  "Properties" : {
+    "AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
+    "SubnetId" : { "Ref" : "PublicSubnetA"},
+    "Tags" : [ {"Key" : "Name", "Value" : "Natgateway" } ]
+  }
+},
+"EIP" : {
+  "Type" : "AWS::EC2::EIP",
+  "Properties" : {
+    "Domain" : "VPC"
+  }
+},
+"Route" : {
+  "Type" : "AWS::EC2::Route",
+  "Properties" : {
+    "RouteTableId" : { "Ref" : "PrivateRouteTable" },
+    "DestinationCidrBlock" : "0.0.0.0/0",
+    "NatGatewayId" : { "Ref" : "NAT" }
+  }
+}

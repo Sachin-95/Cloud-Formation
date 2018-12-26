@@ -1,0 +1,103 @@
+{
+  "PrivateNatgatewayA": {
+    "Type": "Custom::NatGateway",
+    "Properties": {
+      "VpcId": {
+        "Ref": "VPC"
+      },
+      "SubnetId": {
+        "Ref": "PrivateSubnetA"
+      },
+      "AllocationId": {
+        "Fn::GetAtt": [
+          "NatIP",
+          "AllocationId"
+        ]
+      },
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [
+              "",
+              [
+                "Private A ",
+                {
+                  "Ref": "AWS::StackName"
+                }
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  },
+
+"PrivateNatgatewayB": {
+    "Type": "Custom::NatGateway",
+    "Properties": {
+      "VpcId": {
+        "Ref": "VPC"
+      },
+      "SubnetId": {
+        "Ref": "PrivateSubnetB"
+      },
+      "AllocationId": {
+        "Fn::GetAtt": [
+          "NatIP",
+          "AllocationId"
+        ]
+      },
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [
+              "",
+              [
+                "Private B ",
+                {
+                  "Ref": "AWS::StackName"
+                }
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  },
+
+"PrivateNatgatewayC": {
+    "Type": "Custom::NatGateway",
+    "Properties": {
+      "VpcId": {
+        "Ref": "VPC"
+      },
+      "SubnetId": {
+        "Ref": "PrivateSubnetC"
+      },
+      "AllocationId": {
+        "Fn::GetAtt": [
+          "NatIP",
+          "AllocationId"
+        ]
+      },
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [
+              "",
+              [
+                "Private C ",
+                {
+                  "Ref": "AWS::StackName"
+                }
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

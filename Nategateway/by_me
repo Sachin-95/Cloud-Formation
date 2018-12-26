@@ -1,0 +1,81 @@
+"PrivateNatgatewayA": {
+  "Type": "Custom::Natgateway",
+  "DependsOn": "MyEIP",
+  "Properties": {
+    "ServiceToken": {
+      "Fn::Join": [
+        ":",
+        [
+          "arn",
+          "aws",
+          "lambda",
+          {
+            "Ref": "AWS::Region"
+          },
+          {
+            "Ref": "AWS::AccountId"
+          },
+          "function",
+          "cfn-natgateway-0-1-1"
+        ]
+      ]
+    },
+    "SubnetId": {
+      "Ref": "PublicSubnet"
+    },
+    "AllocationId": {
+      "Fn::GetAtt": [ "MyEIP", "AllocationId"]
+    }
+  }
+},
+
+"PrivateRouteTable": {
+  "Type": "AWS::EC2::RouteTable",
+  "DependsOn": "MyNatgateway2",
+  "Properties": {
+    "VpcId": {
+      "Ref": "VPC"
+    },
+    "Tags": [{
+      "Key": "Application",
+      "Value": {
+        "Ref": "AWS::StackId"
+      }
+    }, {
+      "Key": "Network",
+      "Value": "Private"
+    }]
+  }
+},
+
+"PrivateRoute": {
+  "Type": "Custom::Natroute",
+  "DependsOn": "MyNatgateway",
+  "Properties": {
+    "ServiceToken": {
+      "Fn::Join": [
+        ":",
+        [
+          "arn",
+          "aws",
+          "lambda",
+          {
+            "Ref": "AWS::Region"
+          },
+          {
+            "Ref": "AWS::AccountId"
+          },
+          "function",
+          "cfn-natroute-0-1-1"
+        ]
+      ]
+    },
+    "RouteTableId": {
+      "Ref": "PrivateRouteTable"
+    },
+    "DestinationCidrBlock": "0.0.0.0/0",
+    "NatGatewayId": {
+      "Ref": "MyNatgateway"
+    }
+  }
+},
