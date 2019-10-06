@@ -55,7 +55,7 @@
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "ImageId": "ami-4d46d534",
+        "ImageId": "ami-0ee0b284267ea6cde",
         "KeyName": {
           "Ref": "KeyName"
         },
@@ -70,6 +70,8 @@
                 "#!/bin/bash\n",
                 "set -ex \n",
                 "echo \"Install Jenkins.\"\n",
+			        	"sudo apt-get update \n",
+			        	"sudo apt-get -y install openjdk-8-jdk \n",
                 "wget -q -O - https://pkg.jenkins.io/debian/jenkins-ci.org.key | sudo apt-key add - \n ",
                 "sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list' \n ",
                 "sudo apt-get update \n",
